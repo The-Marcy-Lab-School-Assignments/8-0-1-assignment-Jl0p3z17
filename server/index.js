@@ -8,11 +8,12 @@ const logRoutes = (req, res, next) => {
     next();
 }
 
-const serveStatic = express.static(path.join(__dirname, '../dist'));
+const staticPath = path.join(__dirname, '../dist');
+const serveStatic = express.static(staticPath);
 
 //endpoint
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../dist/index.html'));
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist', 'index.html'));
 });
 
 //middleware function to serve static assets
