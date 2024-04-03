@@ -1,26 +1,53 @@
-const express = require('express')
-const app = express();
-const path = require('path');
+const express = require('express');
+const path = require('path'); // used to make absolute path to static folder
 
-//MiddleWare controller
+// __dirname is the absolute path to the directory containing this file
+// path.join() will construct an absolute path using the path components provided
+const pathToDistFolder = path.join(__dirname, '..', 'vite-project', 'dist');
+
+const app = express();
+
+/////////////////////
+// Controllers
+/////////////////////
+
+// "Middleware" Controllers perform server-side logic and then invoke next()
+
+// Prints out information about the request for ALL requests
 const logRoutes = (req, res, next) => {
-    console.log(`${req.method} ${req.url} - ${new Date()}`);
+    const time = (new Date()).toLocaleString();
+    console.log(`${req.method}: ${req.originalUrl} - ${time}`);
     next();
+};
+
+// This middleware controller is created by invoking `express.static(filepath)`
+// Sends the static assets (HTML, CSS, and JS) in the frontend dist folder to the client for ALL requests
+const serveStatic = express.static(pathToDistFolder);
+
+// "Response" controllers send data to the client
+const serveData = (req, res) => {
+    // Example response data.
+    const data = { message: "This is some data from the API." };
+    res.json(data);
+};
+const serveHello = (req, res, next) => {
+    const name = req.query.name || "stranger";
+    res.send(`hello ${name}`);
 }
 
-const staticPath = path.join(__dirname, '../dist');
-const serveStatic = express.static(staticPath);
+////////////////////////
+// Routes
+////////////////////////
 
-//endpoint
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../dist', 'index.html'));
-});
-
-//middleware function to serve static assets
+// Middleware uses `app.use` and applies to ALL requests (unless otherwise specified)
 app.use(logRoutes);
 app.use(serveStatic);
 
+app.get('/api/hello', serveHello);
+app.get('/api/data', serveData);
 
-//listen
+
 const port = 8080;
-app.listen(port, () => console.log(`listening at http://localhost:${port}`));
+app.listen(port, () => {
+    console.log(`Server is now running on http://localhost:${port}`);
+});
